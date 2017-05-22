@@ -221,6 +221,7 @@
         <Name>system_config.h</Name>
         <Path>Header Files/app/system_config/default</Path>
         <Checksum>7DAC3B7C1301190BFE0F1FA3F215F7BB</Checksum>
+        <ProjectFileChecksum>4AC0861B00E29B2872F38B3BC21A8514</ProjectFileChecksum>
       </Template>
       <Template>
         <Name>system_definitions.h</Name>
