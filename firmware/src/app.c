@@ -67,7 +67,6 @@ char rx[64]; // the raw data
 int rxPos = 0; // how much data has been stored
 int gotRx = 0; // the flag
 int rxVal = 0; // a place to store the int that was received
-
 // *****************************************************************************
 /* Application Data
   Summary:
@@ -388,6 +387,9 @@ void APP_Tasks(void) {
 
             appData.state = APP_STATE_WAIT_FOR_READ_COMPLETE;
             if (appData.isReadComplete == true) {
+                appData.isReadComplete = false;
+                appData.readTransferHandle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
+               
                 int ii = 0;
                 // loop thru the characters in the buffer
                 while (appData.readBuffer[ii] != 0) {
@@ -406,9 +408,7 @@ void APP_Tasks(void) {
                         ii++;
                     }
                 }
-                appData.isReadComplete = false;
-                appData.readTransferHandle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
-
+                
                 USB_DEVICE_CDC_Read(USB_DEVICE_CDC_INDEX_0,
                         &appData.readTransferHandle, appData.readBuffer,
                         APP_READ_BUFFER_SIZE);
@@ -417,6 +417,7 @@ void APP_Tasks(void) {
                     appData.state = APP_STATE_ERROR;
                     break;
                 }
+
             }
 
             break;
@@ -449,15 +450,30 @@ void APP_Tasks(void) {
             appData.writeTransferHandle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
             appData.isWriteComplete = false;
             appData.state = APP_STATE_WAIT_FOR_WRITE_COMPLETE;
-            if(gotRx){
-            len = sprintf(dataOut, "got: %d\r\n", rxVal);
-            i++;
-            USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
-                    &appData.writeTransferHandle,
-                    appData.readBuffer, 1,
-                    USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
-            rxPos=0;
-            gotRx=0;
+
+//            len = sprintf(dataOut, "%d\r\n", i);
+//            i++;
+//            if (appData.isReadComplete) {
+//                USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
+//                        &appData.writeTransferHandle,
+//                        appData.readBuffer, 1,
+//                        USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
+//            } else {
+//                USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
+//                        &appData.writeTransferHandle, dataOut, len,
+//                        USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
+//                startTime = _CP0_GET_COUNT();
+//            }
+            
+            if (gotRx) {
+                len = sprintf(dataOut, "got: %d\r\n", rxVal);
+                i++;
+                USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
+                        &appData.writeTransferHandle,
+                        dataOut, len,
+                        USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
+                rxPos = 0;
+                gotRx = 0;
             } else {
                 len = sprintf(dataOut, "%d\r\n", i);
                 i++;
